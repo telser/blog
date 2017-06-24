@@ -1,0 +1,187 @@
+---
+title: Adventures In Sparc Part 2:
+subtitle: Thoughts Around Using OpenBSD On Sparc
+tags: OpenBSD, AIS, pf, httpd, ldoms
+---
+
+* Why OpenBSD?
+  How did OpenBSD even become a consideration? When talking to someone about using Sparc hardware for the first time there are a few common reactions
+
+  1. What are you even talking about?
+  2. That's the old Sun stuff with Solaris right? It still works?
+  3. What Linux distribution are you using? Ubuntu? (Often, but not always, completely missing that this is a different architecture)
+  4. If they know me as a developer fairly well: So you are using FreeBSD?
+
+  Obviously those are broad groupings and a real person has probably not said 2 or 3. The first and last though could be real reactions depending on the person.
+  The point is that normally any BSD does not get mentioned. Solaris being the obvious OS that would support the hardware, and knowing FreeBSD did not I sought
+  out others, with an eye for a BSD. NetBSD runs on everything, or that was the thought. It turns out that, when I looked at least, sun4v was not supported in the Sparc64 port.
+  Without support from the OS known for portability, my hopes were not high for support in OpenBSD. Continued investigation said just the opposite, a great surprise.
+
+  That left the following options of operating system to use:
+  - Solaris
+  - Some Linux distribution
+  - Some Illumos distribution
+  - OpenBSD
+  - Plan9
+
+  Of those, Solaris is immediately marked off because it requires a license to use in production. Plan9 is also ruled out, finding software would be difficult at best.
+  Using pkgsrc could be possible but it isn't officially supported, thus would be a ton of work at best. Next up are the various Linux distributions, some of the more recent
+  developments in the Linux community have been disturbing so supporting these, even implicitly is not great. Further, Gentoo is the only distribution with a sparc64 build
+  but it also is not exactly a build as everything is built from source. Having ruled out a Linux distribution, next are Illumos distributions. Unfortunately consistently updated
+  and Sparc support are mutually exclusive for Illumos distributions. Though I have managed to get something going there, it is not a good update situation.
+
+* Setting up pf
+
+One of the key selling points for OpenBSD as I have heard is pf.
+There is not a difference with setting up pf on any other platform. But since it is so prolific it seems worth mentioning.
+My experience with firewalls before I began down my Sparc adventure was not much other than configuring security groups in AWS.
+So coming in, essentially fresh, to the pf world I can say it has been very pleasurable to work with.
+I will gladly admit to having locked myself out in the learning process, but that isn't the fault of the tool, rather the user.
+Some of the key things that I've used are tables, passive operating system fingerprinting, lists, and quick rules.
+If you already know what you are doing then you can ignore this, but if this is new to you I *strongly* suggest starting with a test system,
+ block everything then slowly begin allowing what you need through.
+A few tips from my experience include:
+- remember to let dns out of your network, if you need that of course,
+- when using the operating systems fingerprinting keep in mind that depending on the system using to connect unknown could be more likely than the first look might imply.
+- Keep in mind icmp types that you allow and the results of doing so
+- Use tables or lists for everything you can
+
+* Some LDOM experiences
+
+OpenBSD has support for being the LDOM host operating system, called the "Control Domain" in LDOM parlance. Logical Domains, occupy a rather unique space in virtualization.
+They are not OS level virtualization, like "containers" such as Jails or Zones. With LDOMs, the hypervisor operates in the management processor.
+A difference here from many of the usual machine level virtualization solutions and hypervisors like virtualbox, Xen, and others is this level of
+integration with the hardware. Separation, to my understanding, splits all the way down to the RAM and PCIe level. Meaning that a domain can have "complete" control
+over the root of a PCIe controller that then is physically invisible, along with all the other resources, to all other domains /including/ the Control Domain!
+
+With this ability you can take away disk controllers access and be somewhat assured that even a security vulnerability in the Control Domain isn't going to give access to
+resources in use by the other domains! There are some domain role restrictions here, simple version is if the domain is a "root" domain i.e. one that can hold a PCIe device tree, then this is true.
+Something to notice is this somewhat increased security guarantee comes at a flexibility cost: to reconfigure the LDOMs requires a reboot of the hardware, so all of the domains come down.
+
+With Illumos you can run Zones inside of the LDOMs. So this flexibility is less needed and works out great for multi-tenancy of a particular machine, but OpenBSD doesn't have
+an equivalent to Zones so it isn't possible here.
+
+How has this worked in practice for me? It has been a mixed experience around different hardware.
+A brief look at the hardware that I have, and thus attempted this on:
+- A few Sun T2000s
+  - All with a 8 core CPU for a total of 32 threads - UltraSPARC T1
+  - 16, 32, or 64 GB of RAM
+  - Various disk configurations
+- A Sun T5240
+  - 2 CPUs, each 8cores and 8 threads/core for 128 threads - UltraSPARC T2+
+  - 192 GB of RAM
+  - Disks that have been rotated, recently a pair each of lowish end Crucial SSDs, Hitachi HDDs, and original Sun HDDs
+
+On the first set of machines, the T2000s the ldom support in OpenBSD has worked exactly as advertised. Writing a configuration file and rebooting to use that
+has worked as I would expect with no real issues. You can arrive in an edge case around memory allocation where the calculation is a bit off and slightly more needs to
+be set aside for the primary (Control) domain. But this happens only when exactly specifying the primary ram, which is optional.
+
+Moving over to the T5240 has been a completely different experience. Here every attempt to boot the machine with the ldom daemon starting in OpenBSD resulted in a hang.
+The only way I was able to ever recover from this was to reboot the machine from a different device. Generally when I hit problem I try to dig as deep as I can to find
+where it is happening, but my knowledge in how this all works has kept me from going too deep. The last thing I considered was the firmware versions, however obtaining
+different versions as an individual who will never be able to afford a support contract seems to be an exercise in futility.
+ Also, I don't have a second T5240 to test on... It is frustrating that a configuration that works perfectly fine on any of the T2000s fails.
+
+* Switching from Nginx to OpenBSD's httpd
+
+Most of my web server usage at this point is Nginx. My current job uses it, previous jobs have as well, and I use it for many of my personal setups. So I've been around the
+configuration file at least some. At some point in the past I used lighttpd, that was so long ago, 7 years maybe?, any comparison is far out of the question.
+Somewhere and somewhen there is a repressed memory including an Apache configuration, but really I mostly remember the pain of it.
+
+Moving on.. Last weekend I decided to give httpd a shot and reduce the amount of software installed on top of the OpenBSD base for a machine. If Nginx is easy to configure,
+then httpd is a breeze. Granted, this particular setup is not doing anything very complicated, but that appears to be the whole point of httpd. I do not expect, nor would
+I suggest anyone else expect, httpd to be a reverse proxy for an arbitrary TCP connection, a load balancer (relayd is a good option here or so I've heard), or any of the
+other not-just-serving-content roles Nginx supports. Just serving up content though? Seems very hard to beat the simplicity of a base install of OpenBSD and go right
+out-of-the-box.
+
+* Comparing to Freebsd and Illumos
+
+This may seem a bit of an odd section comparing across operating systems and architectures like this. In reality we only use one in context of the other though.
+To start off, it is a bit of an unfair comparison to say all of Illumos, because there are many different distributions. For the purposes of this comparison here is a rough
+outline of the different operating environments:
+
+- Freebsd/AMD64
+  - custom compiled kernel including vnet
+  - pkg for most software, fall back to ports for others
+  - iocage for jail management, built from git source
+  - Using out of the box pf and jails (wrapped with iocage) but nothing else extremely unique(does the rc system count?)
+  - Large number of non-default applications(ranging from emacs to Nginx to CI servers and so on)
+- Illumos/Sparc64 (exact distribution should be not an issue)*
+  - built-in package management is IPS based
+  - compile *almost* all software from source using pkgsrc
+  - openjdk8 and bootstrap gcc from opencsw
+  - Out-of-the-box software: ipfilter, zoneadm/zonecfg
+  - Attempt to use as much as possible from pkgsrc
+- OpenBSD/Sparc64
+  - pkg_add for most software
+  - fall back to ports when needed
+  - Using out-of-the-box LDOMs, pf, httpd, unbound
+  - several non-default applications (mostly security/networking/monitoring based will write a post about using "bro" sometime hopefully soon)
+
+A couple of notes on the above before continuing. First, "normal" default included things are not called out here, like ssh, ntpd, and others. The software lists
+are far from being complete, just supposed to be a general idea. Note that I am using pkgsrc, much like SmartOS does, but there is, as of this writing, not a
+version of SmartOS available for Sparc machines. If the nice people over at Joyent want to build that I would be *very* happy to use it though! Finally, the name
+of the Illumos distribution being used is not named because there are a couple of bugs and I would hate to be the one calling those out, but with a little work it
+should not be extremely hard to figure out.. Only so many choices after all.
+
+Since this post is supposed to be OpenBSD focused, the following is going to only be about where OpenBSD wins/loses and to whom/why. As opposed to a full three-way comparison.
+
+- OpenBSD wins:
+  - PF, PF, PF!
+    - You might say: " But Freebsd has pf too! There's even pfsense and opnsense based on it!"
+      - OpenBSD's pf has added a bunch of features that just are not imported to Freebsd (yet?). Quick rules are a very easy example of this.
+    - ipfilter? Configuration is much less straightforward here so this easily loses
+  - Out-of-the-box software
+    - Openbsd just comes with the ability to do so much more, while not being more heavyweight. Sure httpd is installed, but it does *not* run by default.
+      The turn every knob to on by default is somewhat an issue in systems that move from desktop to servers, but OpenBSD manages to include the ability to do many things
+      while realizing you might not want to do everything, leaving it up to the user to enable features.
+  - Binary packages
+    - Freebsd has them on AMD64 as well, but finding Illumos software that has sparc binaries is not particularly easy
+  - Config file setups
+    - Particularly the nic setups, including virtual devices (like bridges) are all contained in config files so it is *very* easy to repeat or just track what you have done.
+      This contrasts most with Illumos which uses more commands (though those commands might be nicer than the OpenBSD equivalent) and does not seem to even have the config files
+      option for several things like networking.
+  - reasonable file system layout and plain text logging
+    - Who would have thought that logs go in /var/log or that system configuration goes in /etc?
+      - This is a massive complaint around a number of operating systems for me. Lack of convention or adherence to a convention around the filesystem layout.
+        OpenBSD does a pretty good job with this for the builtin software and the packages.
+      - Side note, that my personal preference is still for the separation of user installed software and configuration to be under /usr/local as it is on FreeBSD.
+        OpenBSD having user software in /usr/bin, and user configuration in /etc instead of /usr/local/bin and /usr/local/etc is still worlds better than many others including
+        Illumos where some software is sometimes in /usr/sfw/bin, other times, in /opt, or elsewhere all for packages from the system
+        or some configuration piece in /usr/something-not-etc
+- OpenBSD loses on:
+  - No ZFS
+    - Both of other two have support for using ZFS. The ability to prevent bitrot, mirror data, and perform volume management are all great things from ZFS. That's not
+      even counting transparent compression, the ARC (adaptive replacement cache), and a whole bunch of others. There are downsides, it is a large codebase to import
+      and it is CDDL not the OpenBSD preferred license of ISC (akin to MIT or BSD license but I am not a lawyer..). The advantages it or a similar filesystem,
+      maybe HAMMER from the dragonflybsd people or something else, would be great to have in OpenBSD.
+  - No OS-level virtualization
+    - "Containers", something akin to Jails or Zones simply does not exist.
+  - Java
+    - You can get a jvm going on either FreeBSD/AMD64 or Illumos/Sparc64, but there isn't an (easy) way to do so for OpenBSD/Sparc64. I tried to cross compile openjdk on nights
+      and weekends for about 3 weeks last year before giving up hope on this.
+  - Package/Port set size
+    - There are more binaries available for FreeBSD and pkgsrc, especially if you include pkgsrc-wip, has a bigger ports tree (though you could just use that on OpenBSD)
+
+* Updating OpenBSD
+
+** Unease because of tooling
+   OpenBSD's recommended update practice is to install a new version on top of the old with the installer. Coming from the background where freebsd-update
+   or just apt/yum/pacman/etc would do a binary update, I was relatively uneasy. However, the process was straightforward and mostly problem free. The only problem
+   during the upgrade was user error as I describe below..
+
+** W^X mistake
+   One of the updates I performed was from OpenBSD 5.9 to 6.0 then to 6.1. All the others were 6.0 to 6.1. Having gained some confidence in doing the updates a key fact
+   from the update notes was missed. W^X ('W' xor 'X') is a security feature where a page in memory must be writeable exclusive or executable. A change introduced as noted
+   [[https://www.openbsd.org/faq/upgrade60.html][here]] is that OpenBSD is now strictly enforcing this. But I didn't add the wxallowed flag to /usr/local (which is the default) and so things from outside of the base
+   system didn't work anymore.
+
+** Binary broken?
+   Finally, after updating it seems that the aide port is broken, it always dies catching a SIGBUS/SEGV. Building the port, in case something had been left over did not
+   seem to solve the issue either. So that is a mailing list question and I would not be surprised to learn it is user error again. Perhaps related to the W^X? It is around
+   memory access, being SIGSEGV (unless it is SIGBUS, but come on a segmentation fault or a bus error? I'll guess the first).
+
+* Wrap Up
+  These are just a few of my experiences with OpenBSD/Sparc64. Overall it has been great to work with and has really cemented in my mind the general use of OpenBSD.
+  Especially in an area where using something like ZFS is not going to be critical. That and the lack of Java on Sparc64 are the only real architecture specific marks against it.
+  If you have Sparc64 hardware then OpenBSD is a great choice and easily superior to the competition in a number of scenarios.
