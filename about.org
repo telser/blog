@@ -1,0 +1,37 @@
+---
+title: About
+---
+
+I like to write code, build reliable systems, and occasionally make music.
+
+Development and system tools I like:
+
+- Operating Systems:
+  - FreeBSD
+    - iocage
+    - jails
+  - Illumos
+    - zones
+  - OpenBSD
+- Editors
+  - Emacs
+  - vim
+- Programming languages and specific tools
+  - Haskell
+    - Stack
+    - Stackage
+    - Hoogle
+  - Purescript
+- Other tools
+  - git
+  - httpd (OpenBSD)
+  - ksh
+  - nginx
+  - pass
+  - pf
+  - pkgsrc
+  - postgresql
+  - riemann
+  - tmux
+  - zfs
+  - zsh
