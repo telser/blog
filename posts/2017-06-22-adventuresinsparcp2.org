@@ -1,5 +1,5 @@
 ---
-title: "Adventures In Sparc Part 2:"
+title: Adventures In Sparc Part 2
 subtitle: Thoughts Around Using OpenBSD On Sparc
 tags: OpenBSD, AIS, pf, httpd, ldoms
 ---
