@@ -170,9 +170,9 @@ Since this post is supposed to be OpenBSD focused, the following is going to onl
    or just apt/yum/pacman/etc would do a binary update, I was relatively uneasy. However, the process was straightforward and mostly problem free. The only problem
    during the upgrade was user error as I describe below..
 
-** W^X mistake
+** W\^X mistake
    One of the updates I performed was from OpenBSD 5.9 to 6.0 then to 6.1. All the others were 6.0 to 6.1. Having gained some confidence in doing the updates a key fact
-   from the update notes was missed. W^X ('W' xor 'X') is a security feature where a page in memory must be writeable exclusive or executable. A change introduced as noted
+   from the update notes was missed. W\^X ('W' xor 'X') is a security feature where a page in memory must be writeable exclusive or executable. A change introduced as noted
    [[https://www.openbsd.org/faq/upgrade60.html][here]] is that OpenBSD is now strictly enforcing this. But I didn't add the wxallowed flag to /usr/local (which is the default) and so things from outside of the base
    system didn't work anymore.
 
