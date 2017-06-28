@@ -23,7 +23,7 @@ tags: Illumos, dladm, networking, docs
   is to learn more about how networking is handled when it is not abstracted away by a VPS provider
   or others like AWS. Which this appears to be achieving.
 
-** Manpages!
+** TODO Manpages!
    First, having done some zone setup and very basic networking setup in Illumos, I knew
    about dladm and ipadm. The former is the data-link administration tool the second is
    the internet protocol administration tool. Knowing this, the first stop was the manpage
@@ -51,7 +51,7 @@ tags: Illumos, dladm, networking, docs
 
 ** Using The Tools
    So dladm seems like the right tool for the aggregate link. Running,
-   ```dladm create-aggr -l $NIC1 -l $NIC2 $LAGNAME```
+   src_sh{dladm create-aggr -l $NIC1 -l $NIC2 $LAGNAME}
    with the correct nics and whatever the link name is going to be and bam! Now a
    link aggregation exists. Next, having used ipadm to create an interface on top of a
    "device" before and then set an address on that interface, I did exactly that.
