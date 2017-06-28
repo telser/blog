@@ -23,7 +23,7 @@ tags: Illumos, dladm, networking, docs
   is to learn more about how networking is handled when it is not abstracted away by a VPS provider
   or others like AWS. Which this appears to be achieving.
 
-** TODO Manpages!
+** Manpages!
    First, having done some zone setup and very basic networking setup in Illumos, I knew
    about dladm and ipadm. The former is the data-link administration tool the second is
    the internet protocol administration tool. Knowing this, the first stop was the manpage
