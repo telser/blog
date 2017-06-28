@@ -1,0 +1,63 @@
+---
+title: Illumos Gets It Right
+subtitle: A Success In Networking And Documentation
+tags: Illumos, dladm, networking, docs
+---
+
+* What Was The Goal?
+  The goal is pretty easy to describe, have a link aggregation connection to the network
+  for increased bandwidth. Note that is comes from a professional developer, but *not*
+  a sysadmin, *not* a networking specialist, and *not* someone who has ever been those
+  things.
+
+  Hardware involved:
+  - Force10 S4810 (using two of the 10/100/1000 copper ports)
+  - Sun T5240 (using two of the built-in 10/100/1000 nics)
+
+* Illumos Making It Easy
+
+  With very little prior knowledge this whole process took maybe 30 minutes. That includes
+  the time it took to read the manpages, run the necessary commands, physically make the connections
+  and do the configuration on the switch side. That time does not include learning how to do this on the
+  switch, which in my case was the hardest/longest piece. Part of the point in even having this hardware
+  is to learn more about how networking is handled when it is not abstracted away by a VPS provider
+  or others like AWS. Which this appears to be achieving.
+
+** Manpages!
+   First, having done some zone setup and very basic networking setup in Illumos, I knew
+   about dladm and ipadm. The former is the data-link administration tool the second is
+   the internet protocol administration tool. Knowing this, the first stop was the manpage
+   for dladm. Right off the bat there is a sub-command called create-aggr which sounded
+   like exactly the right thing! And it was, plus skipping down to the section on the
+   sub-command said exactly what was needed: aggregate multiple interfaces together.
+
+   I find two things here great from Illumos, but incredibly sad in the software ecosystem
+   as a whole today.
+   - A manpage for the tool exists
+     Way too frequently have I come in contact with tools that have no manpage at all.
+     Then to see any sort of usage documentation becomes a guessing game of do I use
+     "-h" flag, "--help", "--info", or some other obscure flag/subcommand to see any sort of documentation.
+     This situation overall is horrendous. And it seems to be concentrated in communities that either are
+     heavily concentrated in desktop Linux and/or OS X (sorry, MacOS) or are from programming languages
+     with a pattern of using the build tool to install utilities. Think things such as npm, rubygems, and so on.
+
+   - The manpage was of good enough quality to clearly explain the usage of the tool.
+     Too often it seems that applications have either incomplete or just wrong documentation. Granted this is
+     not exactly an easy problem, otherwise it would have been solved long ago. Perhaps then it is even
+     more important to call out dladm for having a nice manpage (in fact Illumos in general seems to be very good at this)
+     with a good number of examples! At the moment I do not recall *ever* seeing example usage from a --help flag..
+
+** Using The Tools
+   So dladm seems like the right tool for the aggregate link. Running,
+   ```dladm create-aggr -l $NIC1 -l $NIC2 $LAGNAME```
+   with the correct nics and whatever the link name is going to be and bam! Now a
+   link aggregation exists. Next, having used ipadm to create an interface on top of a
+   "device" before and then set an address on that interface, I did exactly that.
+   Isn't it great when one command results in something you can consistently use in
+   another? Using tools that have some thought put into them, can make it easy to
+   forget that many things simply do not work this way. A particular build tool used
+   at my day job has reminded me of this sadness recently..
+
+   Illumos made this whole thing so easy, as hopefully demonstrated above. In closing, Illumos had a built-in tool with
+   a good interface (dladm) and that tool had documentation such that a relatively inexperienced user was able to complete
+   the task at hand quickly. The software community needs more systems and applications to be like this.
