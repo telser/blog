@@ -34,6 +34,7 @@ tags: Illumos, dladm, networking, docs
    I find two things here great from Illumos, but incredibly sad in the software ecosystem
    as a whole today.
    - A manpage for the tool exists
+
      Way too frequently have I come in contact with tools that have no manpage at all.
      Then to see any sort of usage documentation becomes a guessing game of do I use
      "-h" flag, "--help", "--info", or some other obscure flag/subcommand to see any sort of documentation.
@@ -42,6 +43,7 @@ tags: Illumos, dladm, networking, docs
      with a pattern of using the build tool to install utilities. Think things such as npm, rubygems, and so on.
 
    - The manpage was of good enough quality to clearly explain the usage of the tool.
+
      Too often it seems that applications have either incomplete or just wrong documentation. Granted this is
      not exactly an easy problem, otherwise it would have been solved long ago. Perhaps then it is even
      more important to call out dladm for having a nice manpage (in fact Illumos in general seems to be very good at this)
