@@ -65,7 +65,7 @@ main = hakyll $ do
         compile $ do
             posts <- recentFirst =<< loadAll "posts/*"
             let indexCtx =
-                    tagCloudField "tags" 50.0 100.0 tags `mappend`
+                    tagCloudField "tags" 80.0 100.0 tags `mappend`
                     listField "posts" postCtx (return posts) `mappend`
                     constField "title" "Home"                `mappend`
                     defaultContext
