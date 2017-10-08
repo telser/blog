@@ -1,0 +1,76 @@
+---
+title: "A Big Win For FreeBSD 11.1"
+subtitle: "Getting More For Free"
+tags: AWS, FreeBSD, ZFS
+---
+
+In my last post I talked about how the team I work on is using ZFS to save money on AWS.
+What I did not mention though, on purpose, was what operating system we are using. This
+was because everything mentioned there applies to ZFS regardless which system it is being
+used on. Now however there is something system specific.
+
+FreeBSD 11.1 release announcment in my opinion buried the lead a bit. Included in this
+release, and enabled by default is a feature for ZFS called compressed ARC. This feature
+has essentially turned the AWS instance I mentioned in the previous post into a much
+more expensive one, simply by using the OS update.
+
+* What Is ARC
+
+ZFS is a very advanced filesystem. Included in that is a caching system to increase performance.
+I am no expert in the internals of ZFS, so this will not be in depth. Adaptive Replacement
+Cache, [[https://en.wikipedia.org/wiki/Adaptive_replacement_cache][ARC]], is an algorithm for memory management with better performance than the more
+common Least Recently Used. LRU is older and covered frequently in Operating Systems courses,
+at least it was in the one I took as an undergraduate using the popular [[https://www.amazon.com/Operating-System-Concepts-Abraham-Silberschatz/dp/1118129385]["dinosaur book"]].
+This uses a combination of frequently and recently used memory pages. ZFS uses a variation
+of this for caching data in RAM.
+
+* Compressed ARC And Why It Is A Big Deal
+
+Prior to FreeBSD 11.1, on Oracle Solaris and Linux*, the data kept in the ARC cache was decompressed. When
+writing a piece of data to disk ZFS will compress it and decompress on a read acting completely
+transparently to applications. The cache stored in RAM previously was the decompressed version,
+but now is the compressed version and will be decompressed reading out of RAM.
+
+Note:* As an aside, illumos could vary by distribution, but they already have the compressed
+ARC feature as well. Just recognizing this to preempt any messages about forgetting the leading
+work those guys do.
+
+This means now though that space to cache things in RAM is multiplied by the compression ratio.
+FreeBSD 11.1 has added a new line to the top utility to track this. For the team I work on this
+means that we get a significant amount more effective RAM. We have not seen the same compression
+ratio in the ARC as we do on disk, most likely due to additional data kept for tracking and the
+smaller size, so large items are ejected. Our numbers are around 6.4x on disk, and the highest
+observed for the ARC is around 5.3.
+
+Think about that for a moment though, we are, with an operating system update and nothing else,
+getting 5.3 times more RAM for the size of the ARC. It is really 5.3 times more data stored
+in the same amount of physical memory, yes, but is operationally very similar to have just
+adding additional memory to the system.
+
+In our production system this is giving us over 100GB of data in around 20GB of RAM. This
+is extremely dynamic due to the ever changing demands on the system and what applications
+are using. Keep in mind that as memory pressure rises ZFS will decrease the size of the ARC
+so that applications continue to operate.
+
+* Costs Savings Versus Without Compressed ARC
+
+This has been a huge performance benefit for us most shown by a data processing pipeline
+that is run only on a as needed basis being hours faster. Framing this a different way,
+to get the same level of performance on Linux or a previous version of FreeBSD would mean
+purchasing a larger instance on AWS.
+
+ Looking at the on-demand pricing [[https://aws.amazon.com/ec2/pricing/on-demand/][here]], it would be more than one instance size up to get that additional 80GBs of memory. The current instance
+is getting an effective 145+GBs of memory. Using the memory optimized instances, in our
+case at least we are much more memory bound than CPU, the best approximation of this is
+to use the 122GB r4.4xlarge. This is $0.532/hr more than the r4.2xlarge we are using.
+This amounts to more than 380 dollars per month in savings to get the same performance
+as we would be getting without using FreeBSD 11.1
+
+* Conclusion
+
+FreeBSD has been great, and the 11.1 update even better. Compared to using Amazon Linux,
+or any Linux with ext4, FreeBSD is saving us money to get the same performance. From my
+previous post, we were saving over $300/month with expectations for that to head towards
+$800/month. Now with FreeBSD 11.1 that is over $600 and up to $1100. When an operating
+system update can translate into saving hundreds of dollars per month for a single server it
+seems to me it is a resounding success.
