@@ -1,0 +1,97 @@
+---
+title: "Lying With ZFS"
+subtitle: "And Saving Money On AWS In The Process"
+tags: AWS, EBS, FreeBSD, TrafficServer, ZFS
+---
+
+* Defining the problem
+
+For a large number of reasons, many dealing with internal organizational oddities, the team
+that I work on found a need for a large http cache. We needed this to be persistent because
+rebuilding is an expensive process, mostly from a time perspective due to the response time
+of the services being called and internal rate limits. Our clients would not directly be using
+this cache, just an occassional process our team needed. So speed was not the first priority
+unlike the typical use case of something like Varnish.
+
+Why use an http(s) cache at all, you may ask? This was actually a neat realization for us.
+It let us keep the exact same processing code for our normal work. No specialized code to
+maintain and keep in sync with our usual "online" service calls.
+
+Next was a search for what to use as a cache. Varnish has a disk storage option that was
+experimental and is now deprecated. We learned fairly quickly why after seeing
+consistent drops of the entire cache on disk. The first option was then out. Our investigation
+continued with Squid, but we found reports of issues with cache objects over 32KB. Since
+we have objects to store that are multiple megabytes in size this option was ruled out.
+At this point, a disk caching forward proxy was looking grim and I came up with several ideas
+on implementation, but that's a different story for a different time.
+
+Finally we settled on using Apache TrafficServer, with some hesitation however. Obviously,
+it is used in production and has been for a number of years, but there is relatively little
+information about it or stories of usage. Another hesitation was around the loss of the
+ability to easily test the configuration, which we thought was a huge with with Varnish and VCL.
+
+* Transparent Compression And Lying To The Application
+
+Some applications want access to entire raw disks. Fortunately, TrafficServer is also happy
+with a filesystem or partition. Sadly though it wants an exact size configuration
+at application startup. Our usage would have been better fit with a maximum.
+
+Now for the big payoff. We could use the transparent compression feature of ZFS
+to get more out of the disk. In fact though by not compressing the the responses in
+TrafficServer itself, we could compress the entire thing at a higher setting on gzip.
+
+Since TrafficServer wants the size at the beginning of the application, we tell it a size
+much larger than the size of the actual disk. This is far from ideal, but with some conservative
+calculation based on a trial run, we should be relatively safe for a good while.
+
+* Some Numbers Including The Monthly AWS Savings
+
+In the trial run, with production data, we set the compression setting in ZFS to gzip-6.
+Writing to the cache, but never retrieving from it and bringing it up to even with the
+full production dataset, we quickly wrote around 500 gigabytes of data, according to ZFS.
+With this we were seeing higher than 6.4 compression ratio, giving a logical data written
+of over 3 terabytes. We watched this ratio as data was loaded into the cache and noticed
+that it was stable at that number so we used a flat 6x for the room to give TrafficServer.
+Buying us plently of spare space so the cache does not try to write more than the disk will
+actually hold.
+
+As with any data storage, with shifting needs requires re-evalution. Currently though
+we have around 2 terabytes of EBS volume attached to our instance in AWS. With the 6.4
+number from before, that would be 12.8TB maximum to write. As of this writing ZFS
+reports a logical used of over 5TB. Just comparing that number, with no room to grow,
+to the real volume size of 2TB means that an extra 3TB of disk space would be needed
+otherwise!
+
+AWS currently lists $0.10/GB-Month of general purpose storage [[https://aws.amazon.com/ebs/pricing/][here]]. This means the naive,
+no room to grow, savings equate to 300 dollars per month. Take this out to expected growth
+in the next year or so of doubling the data gives 10TB logically written while still
+only paying for 2TB, so 800 dollars per month difference!
+
+* Save Money With ZFS
+
+The conclusion here is based on having data that compresses well. However, for a single
+team in a large enterprise, the savings mean that our budget can be dedicated to other
+areas of the overall architecture, ultimately meaning a combination of lower costs
+and better customer experience.
+
+Concluding, ZFS is saving us hundreds of dollars per month. That is a good way to sell
+using the technology to your manager/executive. Definitely recommend using it where ever
+possible.
+
+
+* Postscript
+
+The above does not even go into the disk speed gains by compressing. Since EBS general
+purpose storage ties the number of IOPS to the size of the volume, compressing before
+writing yields an increase in effective disk speed. As they exist on this [[https://aws.amazon.com/ebs/details/][page]], today,
+the gp2 volumes top out at 160MB/s, but comparing compressed to non-compressed,
+the compression ratio of 6.4x would mean a max more around 1GB/s. Going a step further
+though, another advantage of ZFS is that it is both a volume manager and filesystem,
+so even though there is that 160MB/s per EBS volume maximum, using multiple EBS volumes
+could go beyond that and still present a single filesystem to TrafficServer or any other
+application. Supposing a compression ratio of 1.5x (less than a quarter of what my team has
+seen, but perhaps a number more likely in a variety of situations) and a target of
+1000MB/s of disk performance, it would take 7 disks with no compression but only 5
+with that 1.5x compression.
+
+So the savings can be found looking for storage capacity or performance.
