@@ -1,7 +1,8 @@
 ---
 title: "Adventures In Sparc Part 1: Background And Starting Out"
 subtitle: ""
-tags: AIS, OpenBSD, Illumos
+series: Adventures In Sparc
+tags: OpenBSD, Illumos
 ---
 
 

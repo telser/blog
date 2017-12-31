@@ -1,0 +1,138 @@
+---
+title: Some Stuff I Did In 2017
+subtitle: Small Overviews Of Personal Setup Advancements
+tags: FreeBSD, NetBSD, caldav, carddav, jails, pf
+---
+
+Looking forward to 2018, has me thinking about what I got done this year. So here is a bit
+ about some of the things I managed to do in 2017. Starting with hardware focused stuff first.
+
+* Installed NetBSD On A T420
+  The T420 was my primary machine for a number of years, and is still a pretty solid machine.
+ Compared to recent machines the screen is definitely the weakest link at 1600x900 and not
+ exactly bright. Further, the storage, memory, and processor are all a bit too weak for a daily
+ driver for me. So it is now a secondary machine for me.
+
+  So why put NetBSD on this? Well a couple of reasons. First, I use and like, pkgsrc on other
+ systems and trying the native environoment seems like a good idea. Having knowledge of different
+ systems is always good as well and I use FreeBSD, illumos, Linux, and OpenBSD elsewhere.
+
+  Installing NetBSD was extremely painless. Starting with the .img file I created a bootable
+ flash drive with ``dd``. Then it was just a matter of following the prompts in the installer.
+ I used an ethernet cable during installation because of wireless issues during install of
+ other systems in the past. However, the wireless card was picked up by the system. NetBSD is
+ not strictly a desktop operating system so the installer does not make any assumptions about
+ how you may want this hardware configured. Editing `/etc/rc.conf` to have "dhclient=YES" is
+ hardly burdensome though.
+
+  Hardware, that I've tested, has mostly "just worked". The wireless card was picked up, as
+ previously mentioned. Graphics, USB, and ethernet all were fine out of the box too. Battery
+ and temperature sensors also worked. The ACPI event for closing the lid did not work out of
+ the box, but given this being a secondary machine I didn't mind or spend time to further
+ investigate suspend/resume.
+
+* Build a home router/wireless access point
+
+  As the exploits against connected appliances, the so-called "internet-of-things", continues to
+ grow, having more control over my home networking has become more important to me. Using pf to
+ firewall my servers has been a good learning experience and ultimately straightforward. Now, I
+ cannot recall where I first read about the APU2 from PC Engines which is the platform chosen for
+ this particular piece of equipment. There are lots of options around the APU, especially around
+ software.
+
+  Given that I have already used pf for setting up firewalls, something using that was a natural
+ choice. OPNsense and pfsense are both mentioned on the PC Engines documentation. Also, there are
+ usage reports of OpenBSD, and "plain" FreeBSD (as opposed to OPNsense and pfsense which are FreeBSD
+ based). Going the appliance route is not really my style, and with my desire to keep using pf
+ OpenBSD or FreeBSD were the likely options. However, going against my own style I chose pfsense.
+ This really came down to being lazy and not wanting to setup the statistics collecting and reporting
+ portions myself. The real downside for this use case of any of the pf options is the lack of
+ 802.11ac support. With a Thunderbolt 3 dock for my laptop, my nas is also wired in, so the most
+ important local connections are not restricted. Lastly, with an internet connection that is
+ less than 200mbps, this hasn't been a huge issue.
+
+  Setting up pfsense was not as easy as I would have hoped. For me editing the ``pf.conf``
+ file directly would have been much easier and faster. The UI does look nice, just navigating
+ a series of menus is slower and more error prone than writing the configuration. The reporting
+ and graphs I mentioned previously were great to have setup for me. Once setup and with better protection against my home network, I was shocked at the amount of
+ telnet requests that now get blocked coming into my home network. That alone makes me recommend
+ always blocking telnet from entering your network.
+
+* Setup a Force10 switch
+
+  Much of my personal server setup owes to my desire to learn about how "real" systems work. Where
+ real is highly secured, professional, available, backed-up, and potentially large. Professionally,
+ being a developer, much of these operational concerns are glossed-over (far too commonly) or handled
+ by someone else. With as few systems as I have and enough processing on the firewall, the path of
+ least resistance lead to a setup with the firewall doing all the routing/switching duties.
+
+  Enter a "dumb" switch. Then something lead me to want VLANs, which meant a heavier duty switch.
+ Back to Ebay I went and a few weeks of searching and learning about the hardware landed me with
+ a Force10 S60. A big deal to me was the OS being BSD based instead of some complete mystery
+ proprietary thing. Well that, and it was the cheapest option checking all the boxes. Setting this
+ up is definitely my least favorite part of my entire setup, but it was super educational for a novice.
+
+* Moved mailserver to FreeBSD
+
+  One of the consequences of adding a switch to my network meant the removal of one of my colocated
+ machines. This was not a huge problem as the removed machine was definitely under-utilized. It was
+ however the machine running my mailserver. The place I chose to put this duty runs FreeBSD and the
+ retired machine was using OpenBSD. An excellent, if slightly outdated, series of posts describing
+ an OpenBSD setup, that I used as an original base, is [[http://technoquarter.blogspot.com/2015/02/openbsd-mail-server.html][here]].
+
+  Going from an OpenBSD running in an LDOM, to a FreeBSD jail was the first domino kicking off
+ a number of changes for me. Problem one was that on OpenBSD I had used pf and that won't work inside
+ of a normal jail. FreeBSD 11 does not include the VIMAGE option as on by default. Now I compile
+ my own kernels. Fortunately the [[https://www.freebsd.org/doc/handbook/makeworld.html][documentation]] on this is great and it was less than a day to go
+ from never having done it, to everything back up and running. Thankfully as well, FreeBSD 12,
+ turns this knob on by default so when that is released I'll be done compiling by hand just for this.
+ Problem two, OpenBSD uses LibreSSL by default, but FreeBSD does not. This lead to two more things
+ which got me back up to where I was previously.
+
+* Switched from ez-jail to iocage
+
+  Running my mailserver in a jail, I wanted to be repeatable, and efficient. A tool frequently
+ mentioned is iocage and two features that piqued my interest were the built in support for
+ VIMAGE as well as nullfs mounts. The prior meant an easy setup for the networking to my mailserver
+ jail. While the latter could mean sharing a package database for all of my jails, and the host.
+ Switching to iocage was easy, but it is definitely meant to be run interactively instead of scripted.
+ Moving to the python-based rewrite, meant raising a few issues and helping the developers debug
+ the problems I had. Beyond those relatively early issues, the project, for me at least, stablized
+ with no issues for several months, if not most of the year.
+
+* Setup Poudriere
+
+  Sharing a package database across all of my jails means taking up significantly less disk and
+ generating less network traffic because the same basic packages don't get downloaded repeatedly.
+ To get back the LibreSSL usage mentioned earlier, the FreeBSD ports system has a flag for that.
+ Further, using Poudriere, building a package repository from a subset of the available ports is
+ extremely easy. With a simple cron task, I now rebuild my limited package repository with the
+ options I want turned on, twice per day. This builds only the updated ports, the system does not
+ spin constantly rebuilding things that have not changed. Should I need a new package, it is
+ simply adding it to a text file, if any options should be adjusted then doing so, and then
+ the package is built and added into the repo on the next scheduled run. This takes care of all
+ dependencies as well.
+
+  Finally, nullfs is a layered filesystem. Using Poudriere, the package repository is kept
+ up-to-date every day. Then the package index is created and shared amongst all the jails.
+ Meaning that nothing is downloaded or copied to update said index. A second cron script will
+ run a security audit of the packages installed in each jail. When a patch is released for a
+ program, the package is already built and on the filesystem. Resulting in a very fast process
+ to keep any particular service (if we think of the jails each as a service) patched and still
+ maintaining the flags like to use LibreSSL.
+
+* Calendarserver
+
+  My last project to mention is setting up and running calendarserver. This is one of the last
+ pieces to run a complete mail/contact/calendar server for myself. I chose to use the calendarserver
+ program because it has both caldav and carddav capabilities. The project is released by Apple
+ giving some assurance that it has been banged on by a good number of people. It is a bit
+ concerning that it is still Python 2.7 based and there being only two years left of Python 2.X.
+ This was way more involved than it should be, and documentation is highly lacking. While using
+ a personal setup, as opposed to relying on a service is something I fully support, this particular
+ one could use some polish.
+
+
+  If anyone wants me to write a more detailed description of the above I gladly will. Though
+ I might do one anyway for the mail or calendarserver bits as they are the most involved
+ and probably the most interesting for someone else to read.

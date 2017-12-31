@@ -1,7 +1,9 @@
 --------------------------------------------------------------------------------
 {-# LANGUAGE OverloadedStrings #-}
+import Data.Char (toUpper)
 import           Data.Monoid (mappend)
 import           Hakyll
+import Series
 
 
 --------------------------------------------------------------------------------
@@ -23,6 +25,7 @@ main = hakyll $ do
 
     -- build up tags
     tags <- buildTags "posts/*" (fromCapture "tags/*.html")
+    series <- buildSeries "posts/*" (fromCapture "series/*.html")
 
     tagsRules tags $ \tag pattern -> do
         let title = "Posts tagged \"" ++ tag ++ "\""
@@ -38,11 +41,25 @@ main = hakyll $ do
                 >>= loadAndApplyTemplate "templates/default.html" ctx
                 >>= relativizeUrls
 
+    tagsRules series $ \serie pattrn -> do
+        let title = toUpper (head serie) : tail serie
+        route idRoute
+        compile $ do
+            posts <- chronological =<< loadAll pattrn
+            let ctx = constField "title" title `mappend`
+                      listField "posts" postCtx (pure posts) `mappend`
+                      defaultContext
+
+            makeItem ""
+                >>= loadAndApplyTemplate "templates/series.html" ctx
+                >>= loadAndApplyTemplate "templates/default.html" ctx
+                >>= relativizeUrls
+
     match "posts/*" $ do
         route $ setExtension "html"
         compile $ pandocCompiler
-            >>= loadAndApplyTemplate "templates/post.html"    (postCtxWithTags tags)
-            >>= loadAndApplyTemplate "templates/default.html" (postCtxWithTags tags)
+            >>= loadAndApplyTemplate "templates/post.html"    (postCtxWithSeriesAndTags series tags)
+            >>= loadAndApplyTemplate "templates/default.html" (postCtxWithSeriesAndTags series tags)
             >>= relativizeUrls
 
     create ["archive.html"] $ do
@@ -91,3 +108,9 @@ tagsCtx ts =
 
 postCtxWithTags :: Tags -> Context String
 postCtxWithTags tags = tagsField "tags" tags `mappend` postCtx
+
+postCtxWithSeries :: Tags -> Context String
+postCtxWithSeries series = seriesField series `mappend` postCtx
+
+postCtxWithSeriesAndTags :: Tags -> Tags -> Context String
+postCtxWithSeriesAndTags series tags = seriesField series `mappend` (postCtxWithTags tags)
