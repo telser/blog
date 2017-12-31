@@ -1,7 +1,7 @@
 ---
 title: Some Stuff I Did In 2017
 subtitle: Small Overviews Of Personal Setup Advancements
-tags: FreeBSD, NetBSD, caldav, carddav, jails, pf
+tags: FreeBSD, NetBSD, caldav, carddav, jails, pf, ldoms, OpenBSD
 ---
 
 Looking forward to 2018, has me thinking about what I got done this year. So here is a bit
