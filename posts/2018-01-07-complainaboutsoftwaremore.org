@@ -1,0 +1,18 @@
+---
+title: Complain About Software More
+subtitle: A Challenge For 2018
+tags:
+---
+
+* Complain More Moan Less
+
+* Avoid "That's just how it is" By Complaining
+
+* Ways To Complain
+
+  - File a bug report/issue
+  - Submit a feature request
+  - Ask for help on IRC
+  - Submit a patch/pull request
+  - Submit updates to documentation
+  - Write a blog post and tell the community

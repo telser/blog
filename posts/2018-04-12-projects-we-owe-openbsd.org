@@ -1,0 +1,36 @@
+---
+title: OpenBSD Is In More Places
+subtitle:
+series: Projects We Owe More Than We Realize
+tags:
+---
+
+* OpenBSD
+
+- OpenSSH
+
+If you're a macOS user or most Linux distributions and have ever run the "ssh" command,
+then you have used OpenSSH.
+
+- LibreSSL
+
+After the Heartbleed vulnerability was discovered in 2014 and OpenSSL was found to be in
+a state of disrepair, OpenBSD forked the project.
+
+- OpenNTPD
+
+- OpenSMTPD
+
+* GNU
+
+- Compilers & Interpreters
+  - GCC
+  - Smalltalk
+  -
+- CLI Tools
+  - tar
+  - nano
+  - ncurses
+- Grub
+
+* Architecture Support

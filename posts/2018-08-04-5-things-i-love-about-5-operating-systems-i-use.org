@@ -1,0 +1,34 @@
+---
+title: "5 Things I Love About 5 Operating Systems I Use"
+subtitle: "Part 1: Hardware, Networking, and Filesystems"
+series: 5 Things I Love About 5 Operating Systems I Use
+tags: FreeBSD, Illumos, Linux, NetBSD, OpenBSD
+---
+
+* Linux
+  One of the best things about using Linux recently is how good the hardware support has become.
+ Specifically speaking, the support for periphrials. It has been a very long time since I have
+ encounted any sort of issue. Random things such as usb-serial consoles, NICs, IEEE 1394a
+ (aka Firewire) cards, have all worked for me with no hassle in the past few years. Even though
+ CUPS can be a pain, printers have even been well supported, as well as scanners.
+
+* Illumos
+  Using a variety of systems can really show the strengths and weaknesses of each of them. As with
+ Linux, Illumos refers to more of a family of operating systems than a single one. Thus the
+ distributions can have relative strengths in addition to that of the platform as a whole. Having
+ used several of these, network configuration has stood out as extremely nice.
+
+  As an example I use link aggregation quite heavily in my personal network. Going from absolutely
+ nothing in knowledge about setting this up on Illumos to having it configured and working was less
+ than 10 minutes of man page and commands. Getting LACP working on the other systems was far more
+ learning and work than a single `dladm` command. This is just a single example of the network
+ administration that is an easy thing to love about Illumos.
+
+* FreeBSD
+  Although Illumos has ties back to the creation of ZFS, FreeBSD is where I first used it "in anger".
+ Since there are literally books on the advantages of ZFS, I'll go through a few I take most advantage
+ of on FreeBSD.
+
+* NetBSD
+
+* OpenBSD

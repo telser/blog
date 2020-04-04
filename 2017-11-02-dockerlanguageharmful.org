@@ -1,0 +1,51 @@
+---
+title: "The Language Used Around Docker Is Harmful"
+subtitle: "Understanding, and Systems Are The Victims"
+tags: Containers, Docker, Jails, Zones
+---
+
+
+Broad Categories:
+
+* Containers are not the same as VMs
+
+** "When I run an Arch Linux container on my Ubuntu host, it is the same as just running Arch Linux"
+This is very emphatically not true. One only need to look at anything that requires direct hardware access. CUDA is a good example. Suppose you have that Ubuntu host and have just found
+a dockerfile for a great CUDA environment. If that dockerfile uses a specific version that relies on a kernel version at least 5.x, but your Ubuntu is on version 4.y then you are simply
+ out of luck. This is because you are not really running the Arch kernel.
+
+Contrast this with PCIe passthrough on a virtual machine. Here, the entire device tree can be exposed to the VM, becoming inaccessible on the host. This VM then *is* running the full kernel with
+all the newer drivers needed.
+
+For many developers this distinction is not a day-to-day occurrance. However, it is important to remember what the tools we use actually are, not just how we most commonly use them. Hammers can
+remove nails, in addition to putting them into place.
+
+Nothing about this is specific to Docker, rather the whole container abstraction. Rather than virtualizing the hardware, the operating system is virtualized which necessarily means that
+the host will limit the hardware compatibility.
+
+** "Docker does not need Linux, I run it natively on my Macbook"
+
+Again, this is not true. Hearing this one made me quite sad. Running Docker on something other than Linux will mean using a virtual machine*.
+
+[1] Note: Actually the illumos folks have implemented the Linux Syscall table and can do this truly natively. It is not recommended to hold your breath waiting for Apple to do this though.
+
+
+* Reproduciblity
+
+** Docker means we get reproducible builds for free.
+Reproducible has a specific meaning that is missed here. Recreating the byte-for-byte same binary given the same source is being reproducible. Docker does a *great* job of getting environments
+for development and production to have configurations the same. But there is nothing, to my knowledge at least, built into Docker that verifies this. If there is a project to remove the sources
+of non-determinism that would be very interesting. Hopefully someone out there will work on this. [[https://reproducible-builds.org][Reproducible-builds]] collects projects that are focused in this area. Unfortunately, most of the
+projects on the [[https://reproducible-builds.org/who/][list]] are operating systems, and their packages fortunately, and not applications.
+
+For more information on reproducible builds checkout the [[https://wiki.debian.org/ReproducibleBuilds/About][Debian wiki page]] and [[https://blog.netbsd.org/tnf/entry/netbsd_fully_reproducible_builds][NetBSD blog post]] on the subject.
+** We run the *exact* same environment in development as in production
+This plays a bit off the previous one. Without that source to binary reproduciblity guarenteeing the same environment is not possible. There is another issue however. In development, Docker can be
+used to setup a datastore connection for a second container, as if it was talking on localhost. Security implications can arise here, particularly around datastores that do not restrict local access.
+
+
+
+* Docker != Containers
+
+** "Containers are not secure"
+** "Having $TOOL in my containers would mean they take up tons of disk!"
