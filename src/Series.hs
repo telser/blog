@@ -75,7 +75,7 @@ seriesField tags = Context $ const . \case
 
 -- | Similar to the 'buildTags' function in "Hakyll.Web.Tags", except
 -- checks the series field, and can only accept one series per item.
-buildSeries :: MonadMetadata m
+buildSeries :: (MonadFail m, MonadMetadata m)
             => Pattern
             -> (String -> Identifier) -- ^ Function for converting a given series name into an identifier for its page
             -> m Tags

@@ -1,0 +1,138 @@
+---
+title: Operating Systems Comparsion
+subtitle: An Overview
+series: Operating Systems Comparsion
+tags: FreeBSD, Illumos, OpenBSD, NetBSD, Linux
+---
+
+At this point I have been running a very diverse network of machines between my personal
+infrastructure, my home machines, and what I use for work. This diversity is in terms of machine
+type, CPU instruction set architecture, and operating system. The focus here is the operating system
+side of things, as informed by the others. Doing a deep dive comparsion like this will be long, so
+there will be multiple posts in a series to get through it all.
+
+*  What Will Be Covered (And What Will Not!)
+  For each OS, I will go over how I was introduced to the software, the context that I currently use
+  it, high points and low points from my experience, how it compares to the others in the set, as
+  well as my thoughts for how the system could be improved.
+
+* The Candidates
+  All of the systems chosen are ones that I have been using for at least a few years. Below is the
+  list of systems:
+  - Devuan
+  - FreeBSD
+  - OpenBSD
+  - Tribblix
+  - Void Linux
+
+* Where
+
+* Devuan
+
+** How I was introduced to Devuan
+
+** Where I currently use it
+
+** High points
+
+** Low points
+
+** Comparing to others
+
+*** FreeBSD
+
+*** OpenBSD
+
+*** Tribblix
+
+*** Void Linux
+
+** What I would change
+
+* FreeBSD
+
+** How I was introduced to FreeBSD
+
+** Where I currently use it
+
+** High points
+
+** Low points
+
+** Comparing to others
+
+*** Devuan
+
+*** OpenBSD
+
+*** Tribblix
+
+*** Void Linux
+
+** What I would change
+
+* OpenBSD
+
+** How I was introduced to OpenBSD
+
+** Where I currently use it
+
+** High points
+
+** Low points
+
+** Comparing to others
+
+*** Devuan
+
+*** FreeBSD
+
+*** Tribblix
+
+*** Void Linux
+
+** What I would change
+
+* Tribblix
+
+** How I was introduced to Tribblix
+
+** Where I currently use it
+
+** High points
+
+** Low points
+
+** Comparing to others
+
+*** Devuan
+
+*** FreeBSD
+
+*** OpenBSD
+
+*** Void Linux
+
+** What I would change
+
+* Void
+
+** How I was introduced to Void
+
+** Where I currently use it
+
+** High points
+
+** Low points
+
+** Comparing to others
+
+*** Devuan
+
+*** FreeBSD
+
+*** OpenBSD
+
+*** Tribblix
+
+** What I would change

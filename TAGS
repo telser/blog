@@ -1,0 +1,17 @@
+
+./src/Series.hs,159
+module SeriesSeries4,5
+getSeries getSeries21,22
+toAlt toAlt24,25
+(>(>->)28,29
+f f29,30
+seriesField seriesField41,42
+buildSeries buildSeries77,78
+
+./src/site.hs,209
+main main9,10
+postCtx postCtx98,99
+tagsCtx tagsCtx104,105
+postCtxWithTags postCtxWithTags108,109
+postCtxWithSeries postCtxWithSeries111,112
+postCtxWithSeriesAndTags postCtxWithSeriesAndTags114,115

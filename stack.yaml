@@ -15,7 +15,7 @@
 # resolver:
 #  name: custom-snapshot
 #  location: "./custom-snapshot.yaml"
-resolver: lts-10.1
+resolver: lts-18.0
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -39,7 +39,12 @@ packages:
 - '.'
 # Dependency packages to be pulled from upstream that are not in the resolver
 # (e.g., acme-missiles-0.3)
-extra-deps: []
+extra-deps:
+  - hakyll-4.14.0.0@sha256:28aab547aa94202d486328aa4bbcd02ecbefc4e5d42dfa15e8137b731a4f5d55,9059
+  # - cryptonite-0.27@sha256:c3a9c8ce11e654a9d5bee827b089d4b50587272828d0c52a85362a58667a916c,18163
+  # - file-embed-0.0.13.0@sha256:a819e90b91cab919ffef5895ab6e1b2a44eac395a585f489b0c289a4a12d1c54,1396
+  # - optparse-applicative-0.15.1.0@sha256:29ff6146aabf54d46c4c8788e8d1eadaea27c94f6d360c690c5f6c93dac4b07e,4810
+  # - pandoc-2.11.4@sha256:72ff2d50048fe7c11ef67bc936f7fdb986282e72edbb5647db1ab63e415c8bc5,40050
 
 # Override default flag values for local packages and extra-deps
 flags: {}
@@ -63,4 +68,7 @@ extra-package-dbs: []
 # extra-lib-dirs: [/path/to/dir]
 #
 # Allow a newer minor version of GHC than the snapshot specifies
-# compiler-check: newer-minor
+compiler-check: newer-minor
+
+allow-newer: true
+allow-different-user: true
